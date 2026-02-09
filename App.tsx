@@ -125,13 +125,18 @@ const App: React.FC = () => {
   ];
 
   const handleInteraction = () => {
-    // Resume AudioContext if it's suspended
+    // Initialize and Resume AudioContext (important for iOS/Safari)
+    if (!audioCtxRef.current) {
+      initAudio();
+    }
     if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
       audioCtxRef.current.resume();
     }
     // Handle background music
     if (audioRef.current && audioRef.current.paused && isMusicPlaying) {
-      audioRef.current.play().catch(() => { });
+      audioRef.current.play().catch((err) => {
+        console.error("Music playback failed:", err);
+      });
     }
   };
 
@@ -145,6 +150,7 @@ const App: React.FC = () => {
         backgroundRepeat: 'no-repeat'
       }}
       onClick={handleInteraction}
+      onTouchStart={handleInteraction}
     >
       <div className="absolute inset-0 backdrop-blur-[1px] pointer-events-none"></div>
       <div className="fixed opacity-0 pointer-events-none w-0 h-0">
@@ -168,7 +174,7 @@ const App: React.FC = () => {
         ))}
       </div>
 
-      <div className="max-w-lg w-full bg-white rounded-3xl shadow-2xl p-8 z-10 text-center border-4 border-white" onClick={(e) => { e.stopPropagation(); handleInteraction(); }}>
+      <div className="max-w-lg w-full bg-white rounded-3xl shadow-2xl p-8 z-10 text-center border-4 border-white" onClick={(e) => { e.stopPropagation(); handleInteraction(); }} onTouchStart={(e) => { e.stopPropagation(); handleInteraction(); }}>
         {status === AppState.QUESTION ? (
           <>
             <div className="mb-6 relative inline-block">
