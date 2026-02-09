@@ -10,9 +10,18 @@ const App: React.FC = () => {
   const [yesButtonScale, setYesButtonScale] = useState(1);
   const [noClickCount, setNoClickCount] = useState(0);
   const [isMusicPlaying, setIsMusicPlaying] = useState(true);
-
+  const audioRef = useRef<HTMLAudioElement>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  React.useEffect(() => {
+    if (audioRef.current) {
+      if (isMusicPlaying) {
+        audioRef.current.play().catch(err => console.log("Playback blocked:", err));
+      } else {
+        audioRef.current.pause();
+      }
+    }
+  }, [isMusicPlaying]);
 
   const initAudio = () => {
     if (!audioCtxRef.current) {
@@ -124,16 +133,12 @@ const App: React.FC = () => {
     >
       <div className="absolute inset-0 backdrop-blur-[1px] pointer-events-none"></div>
       <div className="fixed opacity-0 pointer-events-none w-0 h-0">
-        {isMusicPlaying && (
-          <iframe
-            ref={iframeRef}
-            width="560"
-            height="315"
-            src="https://www.youtube.com/embed/lzQERcY31Kc?autoplay=1&loop=1&playlist=lzQERcY31Kc"
-            title="YouTube video player"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          ></iframe>
-        )}
+        <audio
+          ref={audioRef}
+          src="/music.mp3"
+          loop
+          autoPlay
+        />
       </div>
 
       <button
