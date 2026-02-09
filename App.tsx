@@ -9,8 +9,8 @@ const App: React.FC = () => {
   const [noButtonPos, setNoButtonPos] = useState({ x: 0, y: 0 });
   const [yesButtonScale, setYesButtonScale] = useState(1);
   const [noClickCount, setNoClickCount] = useState(0);
-  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
-  
+  const [isMusicPlaying, setIsMusicPlaying] = useState(true);
+
   const audioCtxRef = useRef<AudioContext | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -44,20 +44,20 @@ const App: React.FC = () => {
     initAudio();
     const ctx = audioCtxRef.current!;
     const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
-    
+
     notes.forEach((freq, i) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      
+
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.1);
-      
+
       gain.gain.setValueAtTime(0.1, ctx.currentTime + i * 0.1);
       gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.1 + 0.3);
-      
+
       osc.connect(gain);
       gain.connect(ctx.destination);
-      
+
       osc.start(ctx.currentTime + i * 0.1);
       osc.stop(ctx.currentTime + i * 0.1 + 0.4);
     });
@@ -70,7 +70,7 @@ const App: React.FC = () => {
   const moveNoButton = useCallback(() => {
     playPopSound();
     if (!isMusicPlaying && noClickCount === 0) setIsMusicPlaying(true);
-    
+
     const newX = Math.random() * (window.innerWidth - 150);
     const newY = Math.random() * (window.innerHeight - 80);
     setNoButtonPos({ x: newX, y: newY });
@@ -82,13 +82,13 @@ const App: React.FC = () => {
     playSuccessSound();
     if (!isMusicPlaying) setIsMusicPlaying(true);
     setStatus(AppState.SUCCESS);
-    
+
     const duration = 5 * 1000;
     const animationEnd = Date.now() + duration;
     const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
     const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
 
-    const interval: any = setInterval(function() {
+    const interval: any = setInterval(function () {
       const timeLeft = animationEnd - Date.now();
       if (timeLeft <= 0) return clearInterval(interval);
       const particleCount = 50 * (timeLeft / duration);
@@ -113,7 +113,16 @@ const App: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 relative overflow-hidden bg-pink-50" onClick={() => !isMusicPlaying && setIsMusicPlaying(true)}>
+    <div
+      className="min-h-screen w-full flex flex-col items-center justify-center p-4 relative overflow-hidden bg-white"
+      style={{
+        backgroundImage: "url('/bg.png')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      <div className="absolute inset-0 backdrop-blur-[1px] pointer-events-none"></div>
       <div className="fixed opacity-0 pointer-events-none w-0 h-0">
         {isMusicPlaying && (
           <iframe
@@ -127,34 +136,34 @@ const App: React.FC = () => {
         )}
       </div>
 
-      <button 
+      <button
         onClick={(e) => { e.stopPropagation(); toggleMusic(); }}
         className={`fixed top-6 right-6 z-50 p-3 rounded-full shadow-lg transition-all duration-300 ${isMusicPlaying ? 'bg-pink-500 text-white animate-pulse' : 'bg-gray-200 text-gray-500'}`}
       >
         {isMusicPlaying ? <Volume2 size={24} /> : <VolumeX size={24} />}
       </button>
 
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20">
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-40">
         {[...Array(20)].map((_, i) => (
           <Heart key={i} className="absolute text-red-400 floating" style={{ top: `${Math.random() * 100}%`, left: `${Math.random() * 100}%`, width: `${Math.random() * 40 + 20}px`, animationDelay: `${Math.random() * 5}s` }} />
         ))}
       </div>
 
-      <div className="max-w-lg w-full bg-white rounded-3xl shadow-2xl p-8 z-10 text-center border-4 border-pink-200" onClick={(e) => e.stopPropagation()}>
+      <div className="max-w-lg w-full bg-white rounded-3xl shadow-2xl p-8 z-10 text-center border-4 border-white" onClick={(e) => e.stopPropagation()}>
         {status === AppState.QUESTION ? (
           <>
             <div className="mb-6 relative inline-block">
-              <div className="w-48 h-48 mx-auto rounded-full overflow-hidden border-8 border-pink-100 shadow-inner bg-pink-50">
-                <img src="https://raw.githubusercontent.com/stackblitz/stackblitz-images/main/valentine_user.png" alt="My Valentine Proposal" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = 'https://picsum.photos/400/400?grayscale'; }} />
+              <div className="w-[250px]  mx-auto overflow-hidden ">
+                <img src="/roth.png" alt="My Valentine Proposal" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = 'https://picsum.photos/400/400?grayscale'; }} />
               </div>
               <div className="absolute -bottom-2 -right-2 bg-red-500 text-white p-2 rounded-full animate-bounce">
                 <Heart fill="currentColor" size={24} />
               </div>
             </div>
 
-            <h1 className="text-3xl md:text-4xl font-bold text-red-600 mb-2 khmer-font leading-tight">សួស្តី ស្រីស្អាតរបស់បង! 💖</h1>
-            <p className="text-gray-600 mb-8 font-semibold khmer-font text-lg">បងមានសំណួរដ៏សំខាន់មួយចង់សួរអូន...</p>
-            <h2 className="text-2xl font-bold text-pink-700 mb-10 khmer-font leading-relaxed">តើអូនស្រលាញ់បងទេ ហើយព្រមធ្វើជា Valentine របស់បងដែរឬទេ?</h2>
+            <h1 className="text-3xl md:text-4xl font-bold text-red-600 mb-2 khmer-font leading-tight">សួស្តី my Besdong Cute </h1>
+            <p className="text-gray-600 mb-8 font-semibold khmer-font text-lg">បងមានអីសួរអូន...</p>
+            <h2 className="text-2xl font-bold text-pink-700 mb-10 khmer-font leading-relaxed">ពៅបងស្រឡាញ់អូន! អូនឡាញ់បងអត់ Babe 💗😖?</h2>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6 relative min-h-[100px]">
               <button
@@ -178,20 +187,19 @@ const App: React.FC = () => {
         ) : (
           <div className="animate-in fade-in zoom-in duration-700">
             <div className="mb-6">
-              <div className="w-64 h-64 mx-auto rounded-full overflow-hidden border-8 border-green-200 shadow-2xl relative">
-                 <img src="https://raw.githubusercontent.com/stackblitz/stackblitz-images/main/valentine_user.png" alt="My Valentine Proposal" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = 'https://picsum.photos/400/400'; }} />
-                <div className="absolute inset-0 bg-red-500/10 flex items-center justify-center">
-                  <Stars className="text-yellow-400 w-full h-full opacity-30 animate-pulse" />
+              <div className="w-64  mx-auto overflow-hidden relative">
+                <img src="/roth1.png" alt="My Valentine Proposal" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = 'https://picsum.photos/400/400'; }} />
+                <div className="absolute inset-0 flex items-center justify-center">
                 </div>
               </div>
             </div>
 
             <h1 className="text-4xl font-bold text-red-600 mb-6 khmer-font">បងស្រលាញ់អូនខ្លាំងណាស់! ❤️</h1>
-            <div className="p-8 bg-pink-50 rounded-2xl border-2 border-pink-100 mb-8">
+            <div className="p-8 bg-white rounded-2xl border-2 border-gray-100 mb-8 shadow-inner">
               <p className="text-2xl text-pink-800 italic font-bold khmer-font">"អូនគឺជាពិភពលោកទាំងមូលរបស់បង!"</p>
             </div>
-            
-            <p className="text-gray-600 mb-8 khmer-font text-xl">ជួបគ្នាថ្ងៃ Valentine ណា៎ម្ចាស់ថ្លៃ! 😘🌹</p>
+
+            <p className="text-gray-600 mb-8 khmer-font text-xl">ជួបគ្នាថ្ងៃ Valentine ណា៎ម្ចាស់ Besdong បង! 😘🌹</p>
 
             <button onClick={() => { setStatus(AppState.QUESTION); setNoClickCount(0); setYesButtonScale(1); }} className="text-pink-400 hover:text-pink-600 text-sm font-bold underline khmer-font">សាកល្បងម្ដងទៀត</button>
           </div>
@@ -199,15 +207,15 @@ const App: React.FC = () => {
       </div>
 
       <footer className="mt-12 text-center text-gray-400 text-sm z-10 bg-white/50 px-4 py-2 rounded-full khmer-font">
-        រៀបចំឡើងដោយ ❤️ <a href="https://t.me/O_Pheakdey" target="_blank" rel="noopener noreferrer" className="text-pink-400 hover:underline font-bold">O_Pheakdey</a>
+        <a href="https://t.me/O_Pheakdey" target="_blank" rel="noopener noreferrer" className="text-pink-400 hover:underline font-bold">O_Pheakdey</a>
       </footer>
 
       {status === AppState.SUCCESS && (
         <div className="fixed inset-0 pointer-events-none z-0">
           {[...Array(15)].map((_, i) => (
-             <div key={i} className="absolute animate-bounce" style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`, animationDelay: `${Math.random() * 2}s`, animationDuration: `${Math.random() * 3 + 2}s` }}>
-               <span className="text-4xl">🥰</span>
-             </div>
+            <div key={i} className="absolute animate-bounce" style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`, animationDelay: `${Math.random() * 2}s`, animationDuration: `${Math.random() * 3 + 2}s` }}>
+              <span className="text-4xl">🥰</span>
+            </div>
           ))}
         </div>
       )}
