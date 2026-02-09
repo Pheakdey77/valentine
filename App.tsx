@@ -16,7 +16,10 @@ const App: React.FC = () => {
   React.useEffect(() => {
     if (audioRef.current) {
       if (isMusicPlaying) {
-        audioRef.current.play().catch(err => console.log("Playback blocked:", err));
+        // Only try to play if it's not already playing (to avoid re-triggering audio context warnings unnecessarily)
+        if (audioRef.current.paused) {
+          audioRef.current.play().catch(() => { });
+        }
       } else {
         audioRef.current.pause();
       }
@@ -121,15 +124,27 @@ const App: React.FC = () => {
     "ពាក្យថា 'ទេ' គ្មានក្នុងវចនានុក្រមបងទេ! 🚫",
   ];
 
+  const handleInteraction = () => {
+    // Resume AudioContext if it's suspended
+    if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+      audioCtxRef.current.resume();
+    }
+    // Handle background music
+    if (audioRef.current && audioRef.current.paused && isMusicPlaying) {
+      audioRef.current.play().catch(() => { });
+    }
+  };
+
   return (
     <div
-      className="min-h-screen w-full flex flex-col items-center justify-center p-4 relative overflow-hidden bg-white"
+      className="min-h-screen w-full flex flex-col items-center justify-center p-4 relative overflow-hidden bg-white cursor-pointer"
       style={{
         backgroundImage: "url('/bg.png')",
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat'
       }}
+      onClick={handleInteraction}
     >
       <div className="absolute inset-0 backdrop-blur-[1px] pointer-events-none"></div>
       <div className="fixed opacity-0 pointer-events-none w-0 h-0">
@@ -137,7 +152,6 @@ const App: React.FC = () => {
           ref={audioRef}
           src="/music.mp3"
           loop
-          autoPlay
         />
       </div>
 
@@ -154,7 +168,7 @@ const App: React.FC = () => {
         ))}
       </div>
 
-      <div className="max-w-lg w-full bg-white rounded-3xl shadow-2xl p-8 z-10 text-center border-4 border-white" onClick={(e) => e.stopPropagation()}>
+      <div className="max-w-lg w-full bg-white rounded-3xl shadow-2xl p-8 z-10 text-center border-4 border-white" onClick={(e) => { e.stopPropagation(); handleInteraction(); }}>
         {status === AppState.QUESTION ? (
           <>
             <div className="mb-6 relative inline-block">
@@ -181,7 +195,13 @@ const App: React.FC = () => {
 
               <button
                 onMouseEnter={moveNoButton}
-                onClick={moveNoButton}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  moveNoButton();
+                  if (noClickCount >= 0) {
+                    alert("ម៉េចក៏ដាច់ចិត្តម្ល៉េះ! ចុច 'ព្រម' ទៅណា៎ babe... 🥺👉👈");
+                  }
+                }}
                 style={noClickCount > 0 ? { position: 'fixed', left: noButtonPos.x, top: noButtonPos.y, transition: 'all 0.2s ease-out', zIndex: 50 } : {}}
                 className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-4 px-10 rounded-full shadow-md whitespace-nowrap khmer-font"
               >
